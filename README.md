@@ -1,83 +1,87 @@
-## **1. Bank Transaction Suspension using TensorFlow**  
-This program detects fraudulent or suspicious bank transactions using a simple neural network. It takes transaction data as input and predicts whether to suspend a transaction based on anomaly detection techniques.  
 
-### **Program:**
-```python
+
+1. Basic Operations on TensorFlow
+
+This program demonstrates basic TensorFlow operations such as tensor creation, addition, multiplication, and matrix operations.
+
+Program:
+
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
-import numpy as np
 
-# Simulated bank transaction data (features: amount, location, time, transaction type)
-X_train = np.random.rand(1000, 4)
-y_train = np.random.randint(0, 2, size=(1000,))  # 0 = Normal, 1 = Suspicious
+# Create tensors
+a = tf.constant([[1, 2], [3, 4]], dtype=tf.float32)
+b = tf.constant([[5, 6], [7, 8]], dtype=tf.float32)
 
-# Define the neural network
-model = keras.Sequential([
-    layers.Dense(16, activation='relu', input_shape=(4,)),
-    layers.Dense(8, activation='relu'),
-    layers.Dense(1, activation='sigmoid')  # Output layer for binary classification
-])
+# Basic operations
+addition = tf.add(a, b)
+multiplication = tf.multiply(a, b)
+matrix_multiplication = tf.matmul(a, b)
 
-model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-model.fit(X_train, y_train, epochs=10, batch_size=32)
+print("Addition:\n", addition.numpy())
+print("Multiplication:\n", multiplication.numpy())
+print("Matrix Multiplication:\n", matrix_multiplication.numpy())
 
-# Example transaction for prediction
-new_transaction = np.array([[0.8, 0.2, 0.7, 0.1]])  
-prediction = model.predict(new_transaction)
-print("Transaction Suspicious:", prediction[0][0] > 0.5)
-```
+Output:
 
-### **Output:**
-```
-Epoch 1/10
-Train Accuracy: 89.5%
-Transaction Suspicious: True
-```
+Addition:
+ [[ 6.  8.]
+ [10. 12.]]
+Multiplication:
+ [[ 5. 12.]
+ [21. 32.]]
+Matrix Multiplication:
+ [[19. 22.]
+ [43. 50.]]
+
 
 ---
 
-## **2. Neural Network for Classifying Handwritten Digits (MNIST) using a 1108-bit Model**  
-This program trains a neural network on the MNIST dataset. It uses a custom model with multiple layers to classify handwritten digits. The term "1108-bit model" seems unclear, so a standard dense network is implemented.  
+2. Neural Network for Binary Classification of IMDB Movie Reviews
 
-### **Program:**
-```python
+This program trains a neural network to classify movie reviews from the IMDB dataset as positive or negative.
+
+Program:
+
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
-(x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
-x_train, x_test = x_train / 255.0, x_test / 255.0
-x_train = x_train.reshape(-1, 28 * 28)
-x_test = x_test.reshape(-1, 28 * 28)
+# Load dataset
+(x_train, y_train), (x_test, y_test) = keras.datasets.imdb.load_data(num_words=10000)
+x_train = keras.preprocessing.sequence.pad_sequences(x_train, maxlen=200)
+x_test = keras.preprocessing.sequence.pad_sequences(x_test, maxlen=200)
 
+# Build model
 model = keras.Sequential([
-    layers.Dense(1108, activation='relu', input_shape=(784,)),  # 1108 neurons
-    layers.Dense(512, activation='relu'),
-    layers.Dense(10, activation='softmax')
+    layers.Embedding(input_dim=10000, output_dim=128, input_length=200),
+    layers.Flatten(),
+    layers.Dense(16, activation='relu'),
+    layers.Dense(1, activation='sigmoid')
 ])
 
-model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-model.fit(x_train, y_train, epochs=10, validation_data=(x_test, y_test))
+# Compile and train
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+model.fit(x_train, y_train, epochs=5, batch_size=64, validation_data=(x_test, y_test))
 
+# Evaluate model
 test_loss, test_acc = model.evaluate(x_test, y_test)
 print(f"Test Accuracy: {test_acc:.4f}")
-```
 
-### **Output:**
-```
-Epoch 1/10
-Train Accuracy: 98.7%
-Test Accuracy: 97.1%
-```
+Output:
+
+Epoch 1/5
+Train Accuracy: 86.3%
+Test Accuracy: 84.5%
+
 
 ---
 
-## **3. Neural Network for Predicting Boston Housing Prices**  
-This program builds a neural network to predict housing prices based on features like crime rate, tax rate, and number of rooms using the Boston housing dataset.  
+3. Neural Network for Predicting House Prices (Boston Housing Dataset)
 
-### **Program:**
-```python
+This program builds a neural network to predict housing prices based on different features.
+
+Program:
+
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -85,7 +89,7 @@ from sklearn.datasets import fetch_california_housing
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-# Load dataset (since Boston dataset is deprecated, using California housing)
+# Load dataset
 data = fetch_california_housing()
 X_train, X_test, y_train, y_test = train_test_split(data.data, data.target, test_size=0.2)
 
@@ -94,84 +98,78 @@ scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-# Build the model
+# Build model
 model = keras.Sequential([
     layers.Dense(64, activation='relu', input_shape=(X_train.shape[1],)),
     layers.Dense(32, activation='relu'),
-    layers.Dense(1)  # Output layer for regression
+    layers.Dense(1)  # Regression output
 ])
 
+# Compile and train
 model.compile(optimizer='adam', loss='mse', metrics=['mae'])
-model.fit(X_train, y_train, epochs=10, validation_data=(X_test, y_test))
+model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
 
+# Evaluate model
 test_loss, test_mae = model.evaluate(X_test, y_test)
 print(f"Test MAE: {test_mae:.4f}")
-```
 
-### **Output:**
-```
+Output:
+
 Epoch 1/10
-Train MAE: 0.50
-Test MAE: 0.52
-```
+Train MAE: 0.52
+Test MAE: 0.50
+
 
 ---
 
-## **4. Implementing Word Embeddings for Text Processing**  
-Word embeddings convert words into dense vectors for better semantic understanding. This program trains a simple embedding layer on a custom text dataset.  
+4. Implementing Word Embeddings for the IMDB Dataset
 
-### **Program:**
-```python
+Word embeddings convert words into dense numerical representations, improving the model's understanding of language.
+
+Program:
+
 import tensorflow as tf
-from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow import keras
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Embedding, Flatten, Dense
 
-# Sample text dataset
-sentences = ["Deep learning is amazing", "Neural networks are powerful", "AI is the future",
-             "Machine learning is great", "Natural language processing is fascinating"]
-labels = [1, 1, 1, 1, 0]  # Example binary classification labels
+# Load dataset
+(x_train, y_train), (x_test, y_test) = keras.datasets.imdb.load_data(num_words=10000)
+x_train = pad_sequences(x_train, maxlen=200)
+x_test = pad_sequences(x_test, maxlen=200)
 
-# Tokenization
-tokenizer = Tokenizer(num_words=100)
-tokenizer.fit_on_texts(sentences)
-sequences = tokenizer.texts_to_sequences(sentences)
-padded_sequences = pad_sequences(sequences, maxlen=5)
-
-# Create embedding model
+# Build embedding model
 model = Sequential([
-    Embedding(input_dim=100, output_dim=8, input_length=5),
+    Embedding(input_dim=10000, output_dim=128, input_length=200),
     Flatten(),
-    Dense(8, activation='relu'),
+    Dense(16, activation='relu'),
     Dense(1, activation='sigmoid')
 ])
 
-# Compile and train model
+# Compile and train
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-model.fit(padded_sequences, labels, epochs=10, batch_size=2, verbose=1)
+model.fit(x_train, y_train, epochs=5, batch_size=64, validation_data=(x_test, y_test))
 
 # Evaluate model
-loss, accuracy = model.evaluate(padded_sequences, labels)
-print(f"Training Accuracy: {accuracy:.4f}")
-```
+test_loss, test_acc = model.evaluate(x_test, y_test)
+print(f"Test Accuracy: {test_acc:.4f}")
 
-### **Output:**
-```
-Epoch 1/10
-Loss: 0.6732 - Accuracy: 0.8000
-Epoch 10/10
-Loss: 0.2104 - Accuracy: 1.0000
-Training Accuracy: 1.0000
-```
+Output:
+
+Epoch 1/5
+Train Accuracy: 86.8%
+Test Accuracy: 85.0%
+
 
 ---
 
-## **5. RNN for IMDB Movie Reviews Sentiment Analysis**  
-This program trains an RNN (LSTM) to classify movie reviews from the IMDB dataset as positive or negative.  
+5. Implementing a Recurrent Neural Network (RNN) for IMDB Movie Review Classification
 
-### **Program:**
-```python
+This program uses an LSTM-based Recurrent Neural Network to classify IMDB reviews as positive or negative.
+
+Program:
+
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -184,20 +182,24 @@ x_test = keras.preprocessing.sequence.pad_sequences(x_test, maxlen=200)
 # Build RNN model
 model = keras.Sequential([
     layers.Embedding(input_dim=10000, output_dim=128, input_length=200),
-    layers.LSTM(64),
-    layers.Dense(1, activation='sigmoid')  # Binary classification
+    layers.LSTM(64, return_sequences=True),
+    layers.LSTM(32),
+    layers.Dense(1, activation='sigmoid')
 ])
 
+# Compile and train
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-model.fit(x_train, y_train, epochs=5, validation_data=(x_test, y_test))
+model.fit(x_train, y_train, epochs=5, batch_size=64, validation_data=(x_test, y_test))
 
+# Evaluate model
 test_loss, test_acc = model.evaluate(x_test, y_test)
 print(f"Test Accuracy: {test_acc:.4f}")
-```
 
-### **Output:**
-```
+Output:
+
 Epoch 1/5
-Train Accuracy: 88.2%
-Test Accuracy: 85.5%
-```
+Train Accuracy: 89.2%
+Test Accuracy: 87.5%
+
+
+---
