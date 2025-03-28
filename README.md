@@ -34,67 +34,128 @@ Output: Hello, World!
 
 ### **Code:**
 ```python
-from collections import defaultdict
 
-grammar = {
-    "E": ["T E'"],
-    "E'": ["+ T E'", "ε"],
-    "T": ["F T'"],
-    "T'": ["* F T'", "ε"],
-    "F": ["( E )", "id"]
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+#define MAX_NON_TERMINALS 100
+#define MAX_PRODUCTIONS 100
+#define MAX_SYMBOLS 100
+
+// Structure to represent a production rule
+typedef struct {
+    char lhs;
+    char rhs[MAX_SYMBOLS];
+} Production;
+
+// Structure to represent the grammar
+typedef struct {
+    char nonTerminals[MAX_NON_TERMINALS];
+    Production productions[MAX_PRODUCTIONS];
+    int numNonTerminals;
+    int numProductions;
+} Grammar;
+
+// Function to initialize the grammar
+void initGrammar(Grammar *grammar) {
+    grammar->numNonTerminals = 0;
+    grammar->numProductions = 0;
 }
 
-first = defaultdict(set)
-follow = defaultdict(set)
+// Function to add a non-terminal to the grammar
+void addNonTerminal(Grammar *grammar, char nonTerminal) {
+    grammar->nonTerminals[grammar->numNonTerminals++] = nonTerminal;
+}
 
-def compute_first(symbol):
-    if symbol in first:
-        return first[symbol]
-    if not symbol.isupper():
-        return {symbol}
-    
-    result = set()
-    for rule in grammar.get(symbol, []):
-        for token in rule.split():
-            first_set = compute_first(token)
-            result.update(first_set - {"ε"})
-            if "ε" not in first_set:
-                break
-        else:
-            result.add("ε")
-    
-    first[symbol] = result
-    return result
+// Function to add a production rule to the grammar
+void addProduction(Grammar *grammar, char lhs, char *rhs) {
+    grammar->productions[grammar->numProductions].lhs = lhs;
+    strcpy(grammar->productions[grammar->numProductions].rhs, rhs);
+    grammar->numProductions++;
+}
 
-def compute_follow(symbol):
-    if symbol == "E":
-        follow[symbol].add("$")
-    
-    for lhs, rules in grammar.items():
-        for rule in rules:
-            tokens = rule.split()
-            for i, token in enumerate(tokens):
-                if token.isupper():
-                    next_tokens = tokens[i+1:]
-                    first_next = set()
-                    for nt in next_tokens:
-                        first_next.update(compute_first(nt) - {"ε"})
-                        if "ε" not in compute_first(nt):
-                            break
-                    else:
-                        first_next.update(follow[lhs])
-                    
-                    follow[token].update(first_next)
+// Function to compute the FIRST set of a symbol
+void computeFirst(Grammar *grammar, char symbol, bool firstSets[][MAX_NON_TERMINALS]) {
+    for (int i = 0; i < grammar->numProductions; i++) {
+        if (grammar->productions[i].lhs == symbol) {
+            char *rhs = grammar->productions[i].rhs;
+            if (rhs[0] >= 'a' && rhs[0] <= 'z') {
+                firstSets[symbol - 'A'][rhs[0] - 'a'] = true;
+            } else if (rhs[0] == 'ε') {
+                firstSets[symbol - 'A'][0] = true;
+            } else {
+                computeFirst(grammar, rhs[0], firstSets);
+            }
+        }
+    }
+}
 
-for non_terminal in grammar:
-    compute_first(non_terminal)
+// Function to compute the FOLLOW set of a symbol
+void computeFollow(Grammar *grammar, char symbol, bool followSets[][MAX_NON_TERMINALS]) {
+    for (int i = 0; i < grammar->numProductions; i++) {
+        char *rhs = grammar->productions[i].rhs;
+        for (int j = 0; j < strlen(rhs); j++) {
+            if (rhs[j] == symbol) {
+                if (j == strlen(rhs) - 1) {
+                    followSets[symbol - 'A'][grammar->productions[i].lhs - 'A'] = true;
+                } else {
+                    computeFirst(grammar, rhs[j + 1], followSets);
+                    for (int k = 0; k < MAX_NON_TERMINALS; k++) {
+                        if (followSets[rhs[j + 1] - 'A'][k]) {
+                            followSets[symbol - 'A'][k] = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
-for _ in range(len(grammar)):
-    for non_terminal in grammar:
-        compute_follow(non_terminal)
+int main() {
+    Grammar grammar;
+    initGrammar(&grammar);
 
-print("First Sets:", dict(first))
-print("Follow Sets:", dict(follow))
+    printf("Enter the number of non-terminals: ");
+    int numNonTerminals;
+    scanf("%d", &numNonTerminals);
+
+    for (int i = 0; i < numNonTerminals; i++) {
+        char nonTerminal;
+        printf("Enter non-terminal %d: ", i + 1);
+        scanf(" %c", &nonTerminal);
+        addNonTerminal(&grammar, nonTerminal);
+    }
+
+    printf("Enter the number of production rules: ");
+    int numProductions;
+    scanf("%d", &numProductions);
+
+    for (int i = 0; i < numProductions; i++) {
+        char lhs;
+        char rhs[MAX_SYMBOLS];
+        printf("Enter production rule %d (LHS RHS): ", i + 1);
+        scanf(" %c %s", &lhs, rhs);
+        addProduction(&grammar, lhs, rhs);
+    }
+
+    bool firstSets[MAX_NON_TERMINALS][MAX_NON_TERMINALS] = {false};
+    bool followSets[MAX_NON_TERMINALS][MAX_NON_TERMINALS] = {false};
+
+    for (int i = 0; i < grammar.numNonTerminals; i++) {
+        computeFirst(&grammar, grammar.nonTerminals[i], firstSets);
+    }
+
+    for (int i = 0; i < grammar.numNonTerminals; i++) {
+        computeFollow(&grammar, grammar.nonTerminals[i], followSets);
+    }
+
+    printf("First Sets:\n");
+    for (int i = 0; i < grammar.numNonTerminals; i++) {
+        printf("%c: ", grammar.nonTerminals[i]);
+        for (
+
 ```
 
 ### **Output:**
@@ -109,38 +170,61 @@ Follow Sets: {'E': {'$'}, "E'": {'$', ')'}, 'T': {'+', '$', ')'}, "T'": {'+', '$
 
 ### **Code:**
 ```python
-precedence = {
-    '+': 1,
-    '-': 1,
-    '*': 2,
-    '/': 2,
-    '(': 0,
-    ')': 0
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_SIZE 100
+
+int precedence(char c) {
+    if (c == '+' || c == '-') return 1;
+    if (c == '*' || c == '/') return 2;
+    return 0;
 }
 
-def operator_precedence_parse(expression):
-    stack = []
-    output = []
-    
-    for char in expression:
-        if char.isalnum():
-            output.append(char)  
-        elif char in precedence:
-            while (stack and precedence.get(stack[-1], 0) >= precedence[char]):
-                output.append(stack.pop())
-            stack.append(char)
-        elif char == ')':
-            while stack and stack[-1] != '(':
-                output.append(stack.pop())
-            stack.pop()
-    
-    while stack:
-        output.append(stack.pop())
-    
-    return ''.join(output)
+void parse(char *expr) {
+    char stack[MAX_SIZE];
+    int top = -1;
+    char output[MAX_SIZE];
+    int outputIndex = 0;
 
-expr = "a+b*c"
-print("Postfix Expression:", operator_precedence_parse(expr))
+    for (int i = 0; i < strlen(expr); i++) {
+        char c = expr[i];
+
+        if (c >= 'a' && c <= 'z') {
+            output[outputIndex++] = c;
+        } else if (c == '(') {
+            stack[++top] = c;
+        } else if (c == ')') {
+            while (stack[top] != '(') {
+                output[outputIndex++] = stack[top--];
+            }
+            top--;
+        } else {
+            while (top >= 0 && precedence(stack[top]) >= precedence(c)) {
+                output[outputIndex++] = stack[top--];
+            }
+            stack[++top] = c;
+        }
+    }
+
+    while (top >= 0) {
+        output[outputIndex++] = stack[top--];
+    }
+
+    output[outputIndex] = '\0';
+    printf("Postfix Expression: %s\n", output);
+}
+
+int main() {
+    char expr[MAX_SIZE];
+    printf("Enter an expression: ");
+    scanf("%s", expr);
+
+    parse(expr);
+
+    return 0;
+}
+
 ```
 
 ### **Output:**
