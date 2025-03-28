@@ -33,7 +33,7 @@ Output: Hello, World!
 ## 2. First and Follow Simulation
 
 ### **Code:**
-```python
+```c
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -169,7 +169,7 @@ Follow Sets: {'E': {'$'}, "E'": {'$', ')'}, 'T': {'+', '$', ')'}, "T'": {'+', '$
 ## 3. Operator Precedence Parser
 
 ### **Code:**
-```python
+```c
 #include <stdio.h>
 #include <string.h>
 
