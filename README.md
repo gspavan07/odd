@@ -24,20 +24,49 @@ export class AppComponent {
 **styles.css**
 ```css
 .highlight {
-  color: red;
+  background-color: yellow;
+  padding: 5px;
 }
+
 .bold {
-  font-weight: bold;
+  font-weight: bolder;
 }
 ```
 
 **app.component.html**
 ```html
-<p [ngClass]="['highlight', 'bold']">
-  This text has multiple classes.
+<p [ngClass]="{ highlight: isHighlighted, bold: isBold }">
+  Angular ngClass Directive Example
 </p>
-```
 
+<button (click)="toggleHighlight()">Toggle Highlight</button>
+<button (click)="toggleBold()">Toggle Bold</button>
+```
+**app.component.ts**
+```ts
+import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  imports: [CommonModule],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.css'
+})
+export class AppComponent {
+  title = 'demo';
+  isHighlighted = false;
+  isBold = false;
+
+  toggleHighlight() {
+    this.isHighlighted = !this.isHighlighted;
+  }
+  toggleBold() {
+    this.isBold =!this.isBold;
+  }
+}
+
+```
 ---
 
 ### 3. Display product code in lowercase and product name in uppercase
