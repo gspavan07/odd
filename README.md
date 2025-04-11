@@ -1,6 +1,3 @@
-Set 19
----
-
 ### Merge Sort
 ```c
 #include <stdio.h>
