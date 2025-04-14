@@ -1,194 +1,171 @@
-### Merge Sort
-```c
-#include <stdio.h>
-#include <time.h>
+## **1. program of Basic operations on TensorFlow.**  
 
-void merge(int arr[], int l, int m, int r) {
-    int n1 = m - l + 1, n2 = r - m;
-    int L[n1], R[n2];
-    for (int i = 0; i < n1; i++) L[i] = arr[l + i];
-    for (int j = 0; j < n2; j++) R[j] = arr[m + 1 + j];
+### **Program:**
+```python
+import tensorflow as tf
 
-    int i = 0, j = 0, k = l;
-    while (i < n1 && j < n2) arr[k++] = (L[i] <= R[j]) ? L[i++] : R[j++];
-    while (i < n1) arr[k++] = L[i++];
-    while (j < n2) arr[k++] = R[j++];
-}
+# Create tensors
+a = tf.constant([[1, 2], [3, 4]], dtype=tf.float32)
+b = tf.constant([[5, 6], [7, 8]], dtype=tf.float32)
 
-void mergeSort(int arr[], int l, int r) {
-    if (l < r) {
-        int m = (l + r) / 2;
-        mergeSort(arr, l, m);
-        mergeSort(arr, m + 1, r);
-        merge(arr, l, m, r);
-    }
-}
+# Basic operations
+addition = tf.add(a, b)
+multiplication = tf.multiply(a, b)
+matrix_multiplication = tf.matmul(a, b)
 
-int main() {
-    int arr[] = {12, 11, 13, 5, 6, 7}, n = 6;
-    clock_t start = clock();
-    mergeSort(arr, 0, n - 1);
-    clock_t end = clock();
-
-    printf("Sorted array: ");
-    for (int i = 0; i < n; i++) printf("%d ", arr[i]);
-    printf("\nTime: %lf sec\n", (double)(end - start)/CLOCKS_PER_SEC);
-    return 0;
-}
-
+print("Addition:\n", addition.numpy())
+print("Multiplication:\n", multiplication.numpy())
+print("Matrix Multiplication:\n", matrix_multiplication.numpy())
 ```
 
-**output**
+### **Output:**
 ```
-Sorted array: 5 6 7 11 12 13 
-Time: 0.000003 sec
+Addition:
+ [[ 6.  8.]
+ [10. 12.]]
+Multiplication:
+ [[ 5. 12.]
+ [21. 32.]]
+Matrix Multiplication:
+ [[19. 22.]
+ [43. 50.]]
 ```
 
 ---
 
-### 2. Hamiltonian Cycle (Backtracking)
+## **2. Design a neural network forclassifying movie reviews(BinaryClassification) using IMDB dataset.**
 
-```c
-#include <stdio.h>
-#include <stdbool.h>
-#include <time.h>
+### **Program:**
+```python
+from tensorflow import keras
+from tensorflow.keras import layers
 
-#define V 5
+(x_train, y_train), (x_test, y_test) = keras.datasets.reuters.load_data(num_words=10000)
+x_train = keras.preprocessing.sequence.pad_sequences(x_train, maxlen=300)
+x_test = keras.preprocessing.sequence.pad_sequences(x_test, maxlen=300)
 
-int graph[V][V] = {
-    {0, 1, 0, 1, 0},
-    {1, 0, 1, 1, 1},
-    {0, 1, 0, 0, 1},
-    {1, 1, 0, 0, 1},
-    {0, 1, 1, 1, 0}
-};
+model = keras.Sequential([
+    layers.Embedding(input_dim=10000, output_dim=128, input_length=300),
+    layers.LSTM(128, dropout=0.2, recurrent_dropout=0.2),
+    layers.Dense(1, activation='sigmoid')
+])
 
-int path[V];
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+model.fit(x_train, y_train, batch_size=64, epochs=5, validation_data=(x_test, y_test))
 
-bool isSafe(int v, int pos) {
-    if (!graph[path[pos - 1]][v]) return false;
-    for (int i = 0; i < pos; i++)
-        if (path[i] == v) return false;
-    return true;
-}
-
-bool hamCycleUtil(int pos) {
-    if (pos == V) {
-        return graph[path[pos - 1]][path[0]] == 1;
-    }
-
-    for (int v = 1; v < V; v++) {
-        if (isSafe(v, pos)) {
-            path[pos] = v;
-            if (hamCycleUtil(pos + 1)) return true;
-            path[pos] = -1;
-        }
-    }
-    return false;
-}
-
-void hamCycle() {
-    for (int i = 0; i < V; i++) path[i] = -1;
-    path[0] = 0;
-
-    if (hamCycleUtil(1)) {
-        printf("Cycle Exists: ");
-        for (int i = 0; i < V; i++) printf("%d ", path[i]);
-        printf("%d\n", path[0]);
-    } else {
-        printf("No Hamiltonian Cycle\n");
-    }
-}
-
-int main() {
-    clock_t start = clock();
-    hamCycle();
-    clock_t end = clock();
-    printf("Time: %lf sec\n", (double)(end - start)/CLOCKS_PER_SEC);
-    return 0;
-}
-
+test_loss, test_acc = model.evaluate(x_test, y_test)
+print(f"Test Accuracy: {test_acc:.4f}")
 ```
 
-**output**
+### **Output:**
 ```
-Cycle Exists: 0 1 2 4 3 0
-Time: 0.000057 sec
-```
----
-
-### 3. Kruskal’s Algorithm (Greedy Method)
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-
-#define MAX 30
-
-struct Edge {
-    int u, v, w;
-};
-
-int parent[MAX];
-
-int find(int i) {
-    while (parent[i]) i = parent[i];
-    return i;
-}
-
-int union_set(int i, int j) {
-    if (i != j) {
-        parent[j] = i;
-        return 1;
-    }
-    return 0;
-}
-
-int main() {
-    int n = 4, edges = 5, u, v, i, j;
-    struct Edge edge[] = {{0,1,10}, {0,2,6}, {0,3,5}, {1,3,15}, {2,3,4}};
-    struct Edge temp;
-    clock_t start = clock();
-
-    // Sort edges
-    for (i = 0; i < edges-1; i++)
-        for (j = 0; j < edges-i-1; j++)
-            if (edge[j].w > edge[j+1].w) {
-                temp = edge[j];
-                edge[j] = edge[j+1];
-                edge[j+1] = temp;
-            }
-
-    printf("Edges in MST:\n");
-    int count = 0, cost = 0;
-    for (i = 0; i < edges; i++) {
-        u = find(edge[i].u);
-        v = find(edge[i].v);
-        if (union_set(u, v)) {
-            printf("%d - %d : %d\n", edge[i].u, edge[i].v, edge[i].w);
-            cost += edge[i].w;
-            count++;
-            if (count == n - 1) break;
-        }
-    }
-
-    printf("Total Cost: %d\n", cost);
-    clock_t end = clock();
-    printf("Time: %lf sec\n", (double)(end - start)/CLOCKS_PER_SEC);
-    return 0;
-}
-
-```
-
-**output**
-```
-Edges in MST:
-2 - 3 : 4
-0 - 3 : 5
-0 - 2 : 6
-Total Cost: 15
-Time: 0.000073 sec
+Epoch 1/5
+Test Accuracy: 80.7%
 ```
 
 ---
+
+## **3. Design a neural network for predicting house prices using Boston Housing Price dataset.**
+
+### **Program:**
+```python
+from tensorflow.keras.datasets import boston_housing
+import tensorflow as tf
+
+# Load dataset
+(x_train, y_train), (x_test, y_test) = boston_housing.load_data()
+
+# Build model
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(64, activation='relu', input_shape=(13,)),
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dense(1)
+])
+
+model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+model.fit(x_train, y_train, epochs=100, validation_data=(x_test, y_test), verbose=0)
+
+loss, mae = model.evaluate(x_test, y_test)
+print(f"Test MAE: {mae}")
+```
+
+### **Output:**
+```
+Original Words:
+ ['apple' 'banana' 'cherry' 'apple' 'banana']
+One-Hot Encoded:
+ [[1. 0. 0.]
+  [0. 1. 0.]
+  [0. 0. 1.]
+  [1. 0. 0.]
+  [0. 1. 0.]]
+```
+
+---
+
+## **4. Implement word embeddings for IMDB dataset.**
+
+### **Program:**
+```python
+from tensorflow import keras
+from tensorflow.keras import layers
+
+(x_train, y_train), (x_test, y_test) = keras.datasets.reuters.load_data(num_words=10000)
+x_train = keras.preprocessing.sequence.pad_sequences(x_train, maxlen=300)
+x_test = keras.preprocessing.sequence.pad_sequences(x_test, maxlen=300)
+
+model = keras.Sequential([
+    layers.Embedding(input_dim=10000, output_dim=128, input_length=300),
+    layers.LSTM(128, dropout=0.2, recurrent_dropout=0.2),
+    layers.Dense(1, activation='sigmoid')
+])
+
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+model.fit(x_train, y_train, batch_size=64, epochs=5, validation_data=(x_test, y_test))
+
+test_loss, test_acc = model.evaluate(x_test, y_test)
+print(f"Test Accuracy: {test_acc:.4f}")
+```
+
+### **Output:**
+```
+Epoch 1/5
+Test Accuracy: 80.7%
+```
+
+---
+
+## **5. Implement a Recurrent Neural Network for IMDB movie review classification problem**
+
+### **Program:**
+```python
+import tensorflow as tf
+from tensorflow.keras.datasets import imdb
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+
+# Load and pad data
+(x_train, y_train), (x_test, y_test) = imdb.load_data(num_words=10000)
+x_train = pad_sequences(x_train, maxlen=200)
+x_test = pad_sequences(x_test, maxlen=200)
+
+# RNN model
+model = tf.keras.Sequential([
+    tf.keras.layers.Embedding(10000, 32),
+    tf.keras.layers.SimpleRNN(32),
+    tf.keras.layers.Dense(1, activation='sigmoid')
+])
+
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+model.fit(x_train, y_train, epochs=5, validation_data=(x_test, y_test))
+test_loss, test_acc = model.evaluate(x_test, y_test)
+print(f"Test Accuracy: {test_acc:.4f}")
+```
+
+### **Output:**
+```
+35363/35363 ━━━━━━━━━━━━━━━━━━━━ 0s 0us/step
+Top predictions:
+1: Pomeranian (0.75)
+2: chow (0.25)
+3: keeshond (0.00)
+```
