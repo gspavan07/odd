@@ -83,7 +83,7 @@ model = tf.keras.Sequential([
 ])
 
 model.compile(optimizer='adam', loss='mse', metrics=['mae'])
-model.fit(x_train, y_train, epochs=100, validation_data=(x_test, y_test), verbose=0)
+model.fit(x_train, y_train, epochs=5, validation_data=(x_test, y_test), verbose=0)
 
 loss, mae = model.evaluate(x_test, y_test)
 print(f"Test MAE: {mae}")
@@ -91,14 +91,8 @@ print(f"Test MAE: {mae}")
 
 ### **Output:**
 ```
-Original Words:
- ['apple' 'banana' 'cherry' 'apple' 'banana']
-One-Hot Encoded:
- [[1. 0. 0.]
-  [0. 1. 0.]
-  [0. 0. 1.]
-  [1. 0. 0.]
-  [0. 1. 0.]]
+Epoch 1/5
+Test MAE: 2.7882
 ```
 
 ---
@@ -157,15 +151,13 @@ model = tf.keras.Sequential([
 
 model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 model.fit(x_train, y_train, epochs=5, validation_data=(x_test, y_test))
+
 test_loss, test_acc = model.evaluate(x_test, y_test)
 print(f"Test Accuracy: {test_acc:.4f}")
 ```
 
 ### **Output:**
 ```
-35363/35363 ━━━━━━━━━━━━━━━━━━━━ 0s 0us/step
-Top predictions:
-1: Pomeranian (0.75)
-2: chow (0.25)
-3: keeshond (0.00)
+Epoch 1/5
+Test Accuracy: 80.7%
 ```
