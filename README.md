@@ -40,7 +40,7 @@ Matrix Multiplication:
 from tensorflow import keras
 from tensorflow.keras import layers
 
-(x_train, y_train), (x_test, y_test) = keras.datasets.reuters.load_data(num_words=10000)
+(x_train, y_train), (x_test, y_test) = keras.datasets.imdb.load_data(num_words=10000)
 x_train = keras.preprocessing.sequence.pad_sequences(x_train, maxlen=300)
 x_test = keras.preprocessing.sequence.pad_sequences(x_test, maxlen=300)
 
@@ -104,7 +104,7 @@ Test MAE: 2.7882
 from tensorflow import keras
 from tensorflow.keras import layers
 
-(x_train, y_train), (x_test, y_test) = keras.datasets.reuters.load_data(num_words=10000)
+(x_train, y_train), (x_test, y_test) = keras.datasets.imdb.load_data(num_words=10000)
 x_train = keras.preprocessing.sequence.pad_sequences(x_train, maxlen=300)
 x_test = keras.preprocessing.sequence.pad_sequences(x_test, maxlen=300)
 
